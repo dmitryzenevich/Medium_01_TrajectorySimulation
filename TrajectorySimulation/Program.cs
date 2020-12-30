@@ -10,34 +10,29 @@ namespace TrajectorySimulation
         public static void Main(string[] args)
         {
             // Initialization
-            var countOfMoveableObjects = 3;
+            var countOfMoveableObjects = 10;
             var moveableObjects = new MoveableObject[countOfMoveableObjects];
 
             // Spawn
             for (var i = 0; i < moveableObjects.Length; i++)
-            {
-                var index = i + 1;
-                moveableObjects[i] = new MoveableObject(index.ToString(), new Vector2Int(index * 5, index * 5));
-            }
+                moveableObjects[i] = new MoveableObject(new Vector2Int(i * 2, i * 2));
+
+            // Get alive objects
+            var aliveObjects = moveableObjects.ToList();
 
             while (true)
             {
-                // Get alive objects
-                var aliveObjects = moveableObjects.Where(m => m.IsAlive).ToList();
-
                 // Compare collisions
                 for (var i = 0; i < aliveObjects.Count; i++)
                 {
-                    for (var j = 0; j < aliveObjects.Count; j++)
+                    for (var j = i + 1; j < aliveObjects.Count; j++)
                     {
-                        if (j == i) continue;
-
                         // If collided - destroy
-                        if (aliveObjects[i].Position == aliveObjects[j].Position)
-                        {
-                            aliveObjects[i].Destroy();
-                            aliveObjects[j].Destroy();
-                        }
+                        if (aliveObjects[i].Position != aliveObjects[j].Position)
+                            continue;
+
+                        aliveObjects.RemoveAt(i);
+                        aliveObjects.RemoveAt(j - 1);
                     }
                 }
 
@@ -45,11 +40,18 @@ namespace TrajectorySimulation
                 aliveObjects.ForEach(ao => ao.RandomMove());
 
                 // Render
-                aliveObjects.ForEach(ao => ao.Render());
-                
+                for (var i = 0; i < aliveObjects.Count; i++)
+                    Render(i.ToString(), aliveObjects[i].Position);
+
                 Thread.Sleep(100);
                 Console.Clear();
             }
+        }
+
+        private static void Render(string symbol, Vector2Int cursorPosition)
+        {
+            Console.SetCursorPosition(cursorPosition.X, cursorPosition.Y);
+            Console.Write(symbol);
         }
     }
 }
